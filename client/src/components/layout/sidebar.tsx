@@ -63,22 +63,14 @@ export function Sidebar() {
         {/* User Profile & Logout */}
         <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
           <div className="flex items-center">
-            {user?.profileImageUrl ? (
-              <img 
-                src={user.profileImageUrl} 
-                alt="Profile" 
-                className="w-8 h-8 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-              </div>
-            )}
+            <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+              <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+            </div>
             <div className="ml-3 flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                 {user?.firstName && user?.lastName 
                   ? `${user.firstName} ${user.lastName}`
-                  : user?.email || 'User'
+                  : user?.username || 'User'
                 }
               </p>
               {user?.email && (
