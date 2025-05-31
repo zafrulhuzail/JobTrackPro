@@ -19,7 +19,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get application statistics
   app.get("/api/applications/stats", async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = 1; // Demo user ID
       const stats = await storage.getApplicationStats(userId);
       res.json(stats);
     } catch (error) {
@@ -28,9 +28,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all applications
-  app.get("/api/applications", isAuthenticated, async (req: any, res) => {
+  app.get("/api/applications", async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = 1; // Demo user ID
       const applications = await storage.getApplications(userId);
       res.json(applications);
     } catch (error) {
@@ -38,88 +38,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get application by ID
-  app.get("/api/applications/:id", isAuthenticated, async (req: any, res) => {
+  // Get single application
+  app.get("/api/applications/:id", async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid application ID" });
-      }
-
-      const application = await storage.getApplication(userId, id);
+      const userId = 1; // Demo user ID
+      const applicationId = parseInt(req.params.id);
+      const application = await storage.getApplication(userId, applicationId);
+      
       if (!application) {
         return res.status(404).json({ message: "Application not found" });
       }
-
+      
       res.json(application);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch application" });
     }
   });
 
-  // Create new application
-  app.post("/api/applications", isAuthenticated, async (req: any, res) => {
+  // Create application
+  app.post("/api/applications", async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = 1; // Demo user ID
       const validatedData = insertApplicationSchema.parse(req.body);
       const application = await storage.createApplication(userId, validatedData);
       res.status(201).json(application);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
-          message: "Invalid application data",
+          message: "Invalid data", 
           errors: error.errors 
         });
       }
+      console.error("Error creating application:", error);
       res.status(500).json({ message: "Failed to create application" });
     }
   });
 
   // Update application
-  app.patch("/api/applications/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/applications/:id", async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid application ID" });
-      }
-
+      const userId = 1; // Demo user ID
+      const applicationId = parseInt(req.params.id);
       const validatedData = updateApplicationSchema.parse(req.body);
-      const application = await storage.updateApplication(userId, id, validatedData);
+      
+      const application = await storage.updateApplication(userId, applicationId, validatedData);
       
       if (!application) {
         return res.status(404).json({ message: "Application not found" });
       }
-
+      
       res.json(application);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
-          message: "Invalid application data",
+          message: "Invalid data", 
           errors: error.errors 
         });
       }
+      console.error("Error updating application:", error);
       res.status(500).json({ message: "Failed to update application" });
     }
   });
 
   // Delete application
-  app.delete("/api/applications/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/applications/:id", async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid application ID" });
-      }
-
-      const deleted = await storage.deleteApplication(userId, id);
+      const userId = 1; // Demo user ID
+      const applicationId = parseInt(req.params.id);
+      
+      const deleted = await storage.deleteApplication(userId, applicationId);
+      
       if (!deleted) {
         return res.status(404).json({ message: "Application not found" });
       }
-
+      
       res.status(204).send();
     } catch (error) {
+      console.error("Error deleting application:", error);
       res.status(500).json({ message: "Failed to delete application" });
     }
   });

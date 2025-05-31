@@ -94,7 +94,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(applications.lastUpdated);
   }
 
-  async updateApplication(userId: string, id: number, updates: UpdateApplication): Promise<Application | undefined> {
+  async updateApplication(userId: number, id: number, updates: UpdateApplication): Promise<Application | undefined> {
     const [application] = await db
       .update(applications)
       .set({ ...updates, lastUpdated: new Date() })
@@ -103,14 +103,14 @@ export class DatabaseStorage implements IStorage {
     return application || undefined;
   }
 
-  async deleteApplication(userId: string, id: number): Promise<boolean> {
+  async deleteApplication(userId: number, id: number): Promise<boolean> {
     const result = await db
       .delete(applications)
       .where(and(eq(applications.id, id), eq(applications.userId, userId)));
     return (result.rowCount || 0) > 0;
   }
 
-  async getApplicationStats(userId: string): Promise<{
+  async getApplicationStats(userId: number): Promise<{
     totalApplications: number;
     pendingApplications: number;
     interviewsScheduled: number;
