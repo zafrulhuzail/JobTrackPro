@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "JobTracker Assistant",
+  "version": "1.0",
+  "description": "Automatically capture job application details from job posting websites",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.linkedin.com/*",
+    "https://indeed.com/*",
+    "https://www.indeed.com/*",
+    "https://glassdoor.com/*",
+    "https://www.glassdoor.com/*",
+    "https://jobs.lever.co/*",
+    "https://boards.greenhouse.io/*",
+    "https://careers.google.com/*",
+    "https://jobs.apple.com/*",
+    "https://careers.microsoft.com/*",
+    "https://jobs.netflix.com/*",
+    "http://localhost:5000/*",
+    "https://*.replit.dev/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Extract Job Details"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.linkedin.com/jobs/*",
+        "https://indeed.com/viewjob*",
+        "https://www.indeed.com/viewjob*",
+        "https://glassdoor.com/job-listing/*",
+        "https://www.glassdoor.com/job-listing/*",
+        "https://jobs.lever.co/*",
+        "https://boards.greenhouse.io/*",
+        "https://careers.google.com/*",
+        "https://jobs.apple.com/*",
+        "https://careers.microsoft.com/*",
+        "https://jobs.netflix.com/*"
+      ],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
