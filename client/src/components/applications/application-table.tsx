@@ -27,12 +27,10 @@ import {
   Eye, 
   Trash2,
   List,
-  LayoutGrid,
-  Mail
+  LayoutGrid 
 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { EmailTestModal } from "./email-test-modal";
 
 interface ApplicationTableProps {
   searchQuery: string;
@@ -57,8 +55,6 @@ const STATUS_LABELS = {
 export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
-  const [emailModalOpen, setEmailModalOpen] = useState(false);
-  const [selectedApplication, setSelectedApplication] = useState<Application | undefined>();
   const { toast } = useToast();
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
@@ -99,11 +95,6 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
     if (window.confirm("Are you sure you want to delete this application?")) {
       deleteApplicationMutation.mutate(id);
     }
-  };
-
-  const handleSendEmail = (application: Application) => {
-    setSelectedApplication(application);
-    setEmailModalOpen(true);
   };
 
   if (isLoading) {
@@ -239,15 +230,6 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleSendEmail(application)}
-                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                          title="Send Email"
-                        >
-                          <Mail className="h-4 w-4" />
-                        </Button>
                         <Button variant="ghost" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -271,15 +253,6 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
           </div>
         )}
       </CardContent>
-
-      <EmailTestModal
-        isOpen={emailModalOpen}
-        onClose={() => {
-          setEmailModalOpen(false);
-          setSelectedApplication(undefined);
-        }}
-        application={selectedApplication}
-      />
     </Card>
   );
 }
