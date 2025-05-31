@@ -174,7 +174,7 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
               }
             </p>
           </div>
-        ) : (
+        ) : viewMode === "table" ? (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -250,6 +250,81 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
                 ))}
               </TableBody>
             </Table>
+          </div>
+        ) : (
+          // Cards View
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredApplications.map((application) => (
+                <Card key={application.id} className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center mr-3">
+                          <Building className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {application.companyName}
+                          </h3>
+                          {application.location && (
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {application.location}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Badge className={STATUS_COLORS[application.status as keyof typeof STATUS_COLORS]}>
+                        {STATUS_LABELS[application.status as keyof typeof STATUS_LABELS]}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">
+                          {application.position}
+                        </h4>
+                        {application.department && (
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {application.department}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+                        <span>Applied: {format(new Date(application.applicationDate), "MMM dd, yyyy")}</span>
+                        <span>Updated: {format(new Date(application.lastUpdated), "MMM dd, yyyy")}</span>
+                      </div>
+                      
+                      {application.notes && (
+                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                          {application.notes}
+                        </p>
+                      )}
+                      
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <div className="flex space-x-2">
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDelete(application.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
       </CardContent>
