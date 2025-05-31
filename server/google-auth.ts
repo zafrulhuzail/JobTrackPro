@@ -111,7 +111,17 @@ export function setupGoogleAuth(app: express.Express) {
       if (err) {
         return res.status(500).json({ error: 'Failed to logout' });
       }
-      res.redirect('/');
+      
+      // Destroy the session completely
+      req.session.destroy((destroyErr) => {
+        if (destroyErr) {
+          console.error('Session destroy error:', destroyErr);
+        }
+        
+        // Clear the session cookie
+        res.clearCookie('connect.sid');
+        res.redirect('/');
+      });
     });
   });
 
