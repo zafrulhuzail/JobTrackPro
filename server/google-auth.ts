@@ -126,9 +126,9 @@ export function setupGoogleAuth(app: express.Express) {
   // Manual registration endpoint
   app.post('/api/auth/register', async (req, res) => {
     try {
-      const { email, password, firstName, lastName } = req.body;
+      const { username, email, password, firstName, lastName } = req.body;
 
-      if (!email || !password || !firstName || !lastName) {
+      if (!username || !email || !password || !firstName || !lastName) {
         return res.status(400).json({ message: 'All fields are required' });
       }
 
@@ -144,11 +144,11 @@ export function setupGoogleAuth(app: express.Express) {
 
       // Create user
       const newUser = await storage.createUser({
+        username,
         email,
         password: hashedPassword,
         firstName,
         lastName,
-        username: null,
         googleId: null,
         profileImageUrl: null,
       });

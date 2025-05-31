@@ -17,6 +17,7 @@ interface LoginData {
 }
 
 interface RegisterData {
+  username: string;
   email: string;
   password: string;
   firstName: string;
@@ -26,6 +27,7 @@ interface RegisterData {
 export default function AuthPage() {
   const [loginData, setLoginData] = useState<LoginData>({ email: "", password: "" });
   const [registerData, setRegisterData] = useState<RegisterData>({ 
+    username: "",
     email: "", 
     password: "", 
     firstName: "", 
@@ -226,6 +228,16 @@ export default function AuthPage() {
                       required
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-username">Username</Label>
+                  <Input
+                    id="register-username"
+                    placeholder="johndoe"
+                    value={registerData.username}
+                    onChange={(e) => setRegisterData(prev => ({ ...prev, username: e.target.value }))}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="register-email">Email</Label>
