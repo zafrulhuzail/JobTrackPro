@@ -18,13 +18,23 @@ export default function Landing() {
             Take control of your job search with our comprehensive application tracking system. 
             Organize, monitor, and optimize your career journey.
           </p>
-          <Button 
-            size="lg" 
-            className="px-8 py-3 text-lg"
-            onClick={() => window.location.href = '/api/auth/google'}
-          >
-            Sign in with Google
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="px-8 py-3 text-lg"
+              onClick={() => window.location.href = '/auth'}
+            >
+              Get Started
+            </Button>
+            <Button 
+              variant="outline"
+              size="lg" 
+              className="px-8 py-3 text-lg"
+              onClick={() => window.location.href = '/api/auth/google'}
+            >
+              Sign in with Google
+            </Button>
+          </div>
         </div>
 
         {/* Features Grid */}
@@ -122,13 +132,23 @@ export default function Landing() {
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
             Join thousands of job seekers who have streamlined their application process.
           </p>
-          <Button 
-            size="lg" 
-            className="px-8 py-3 text-lg"
-            onClick={() => window.location.href = '/api/auth/google'}
-          >
-            Sign in with Google
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="px-8 py-3 text-lg"
+              onClick={() => window.location.href = '/auth'}
+            >
+              Get Started
+            </Button>
+            <Button 
+              variant="outline"
+              size="lg" 
+              className="px-8 py-3 text-lg"
+              onClick={() => window.location.href = '/api/auth/google'}
+            >
+              Sign in with Google
+            </Button>
+          </div>
         </div>
       </div>
     </div>

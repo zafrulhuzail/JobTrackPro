@@ -122,6 +122,84 @@ export function setupGoogleAuth(app: express.Express) {
       res.status(401).json({ message: 'Not authenticated' });
     }
   });
+
+  // Manual registration endpoint
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const { email, password, firstName, lastName } = req.body;
+
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ message: 'All fields are required' });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'User already exists with this email' });
+      }
+
+      // Hash password
+      const bcrypt = require('bcrypt');
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const newUser = await storage.createUser({
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        username: null,
+        googleId: null,
+        profileImageUrl: null,
+      });
+
+      // Log the user in by setting up the session
+      req.login(newUser, (err) => {
+        if (err) {
+          return res.status(500).json({ message: 'Failed to log in after registration' });
+        }
+        res.status(201).json(newUser);
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Manual login endpoint
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+      }
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user || !user.password) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      // Verify password
+      const bcrypt = require('bcrypt');
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      // Log the user in by setting up the session
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(500).json({ message: 'Failed to log in' });
+        }
+        res.json(user);
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
 }
 
 export function requireAuth(req: express.Request, res: express.Response, next: express.NextFunction) {

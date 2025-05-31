@@ -4,226 +4,280 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Briefcase } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { isUnauthorizedError } from "@/lib/authUtils";
+import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useLocation } from "wouter";
+
+interface LoginData {
+  email: string;
+  password: string;
+}
+
+interface RegisterData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
 
 export default function AuthPage() {
-  const { isAuthenticated } = useAuth();
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  
-  // Redirect if already logged in
-  if (isAuthenticated) {
-    setLocation("/");
-    return null;
-  }
-
-  const [loginData, setLoginData] = useState({ username: "", password: "" });
-  const [registerData, setRegisterData] = useState({ 
-    username: "", 
+  const [loginData, setLoginData] = useState<LoginData>({ email: "", password: "" });
+  const [registerData, setRegisterData] = useState<RegisterData>({ 
+    email: "", 
     password: "", 
-    email: "",
-    firstName: "",
-    lastName: ""
+    firstName: "", 
+    lastName: "" 
   });
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Redirect to home if already authenticated
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      window.location.href = '/';
+    }
+  }, [isAuthenticated, isLoading]);
 
   const loginMutation = useMutation({
-    mutationFn: async (data: typeof loginData) => {
-      const res = await apiRequest("POST", "/api/login", data);
-      return await res.json();
-    },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
+    mutationFn: async (data: LoginData) => {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
-      setLocation("/");
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`${response.status}: ${error.message || 'Login failed'}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "You have been logged in successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      window.location.href = '/';
     },
     onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password.",
+          variant: "destructive",
+        });
+        return;
+      }
       toast({
-        title: "Login failed",
-        description: error.message,
+        title: "Error",
+        description: "An error occurred during login.",
         variant: "destructive",
       });
     },
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (data: typeof registerData) => {
-      const res = await apiRequest("POST", "/api/register", data);
-      return await res.json();
-    },
-    onSuccess: (user) => {
-      queryClient.setQueryData(["/api/auth/user"], user);
-      toast({
-        title: "Registration successful",
-        description: "Welcome to JobTracker!",
+    mutationFn: async (data: RegisterData) => {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
-      setLocation("/");
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`${response.status}: ${error.message || 'Registration failed'}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Account created successfully. You are now logged in.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      window.location.href = '/';
     },
     onError: (error: Error) => {
       toast({
-        title: "Registration failed",
-        description: error.message,
+        title: "Registration Failed",
+        description: "An error occurred during registration.",
         variant: "destructive",
       });
     },
   });
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl flex items-center justify-center gap-8">
-        {/* Hero Section */}
-        <div className="hidden lg:flex flex-col justify-center flex-1 text-center">
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mr-4">
-              <Briefcase className="h-10 w-10 text-white" />
-            </div>
-            <h1 className="text-5xl font-bold text-gray-900 dark:text-white">JobTracker</h1>
-          </div>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            Take control of your job search with our comprehensive application tracking system. 
-            Organize, monitor, and optimize your career journey.
-          </p>
-          <div className="grid grid-cols-2 gap-6 max-w-lg mx-auto">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">500+</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Applications Tracked</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400">85%</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Success Rate</div>
-            </div>
-          </div>
-        </div>
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate(loginData);
+  };
 
-        {/* Auth Forms */}
-        <div className="w-full max-w-md">
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    registerMutation.mutate(registerData);
+  };
+
+  const handleGoogleSignIn = () => {
+    window.location.href = '/api/auth/google';
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Welcome to JobTracker</CardTitle>
+          <CardDescription>
+            Sign in to your account or create a new one
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Sign In</TabsTrigger>
-              <TabsTrigger value="register">Sign Up</TabsTrigger>
+              <TabsTrigger value="register">Create Account</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="login">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Welcome back</CardTitle>
-                  <CardDescription>
-                    Sign in to your account to continue tracking your applications
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-username">Username</Label>
-                    <Input
-                      id="login-username"
-                      type="text"
-                      value={loginData.username}
-                      onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
-                      placeholder="Enter your username"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                      placeholder="Enter your password"
-                    />
-                  </div>
-                  <Button 
-                    className="w-full" 
-                    onClick={() => loginMutation.mutate(loginData)}
-                    disabled={loginMutation.isPending || !loginData.username || !loginData.password}
-                  >
-                    {loginMutation.isPending ? "Signing in..." : "Sign In"}
-                  </Button>
-                </CardContent>
-              </Card>
+            <TabsContent value="login" className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={loginData.email}
+                    onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Password</Label>
+                  <Input
+                    id="login-password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={loginData.password}
+                    onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                    required
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={loginMutation.isPending}
+                >
+                  {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                </Button>
+              </form>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={handleGoogleSignIn}
+              >
+                Sign in with Google
+              </Button>
             </TabsContent>
             
-            <TabsContent value="register">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Create an account</CardTitle>
-                  <CardDescription>
-                    Join thousands of job seekers who are organizing their applications
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="register-firstName">First Name</Label>
-                      <Input
-                        id="register-firstName"
-                        type="text"
-                        value={registerData.firstName}
-                        onChange={(e) => setRegisterData(prev => ({ ...prev, firstName: e.target.value }))}
-                        placeholder="First name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-lastName">Last Name</Label>
-                      <Input
-                        id="register-lastName"
-                        type="text"
-                        value={registerData.lastName}
-                        onChange={(e) => setRegisterData(prev => ({ ...prev, lastName: e.target.value }))}
-                        placeholder="Last name"
-                      />
-                    </div>
-                  </div>
+            <TabsContent value="register" className="space-y-4">
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="register-username">Username</Label>
+                    <Label htmlFor="register-firstName">First Name</Label>
                     <Input
-                      id="register-username"
-                      type="text"
-                      value={registerData.username}
-                      onChange={(e) => setRegisterData(prev => ({ ...prev, username: e.target.value }))}
-                      placeholder="Choose a username"
+                      id="register-firstName"
+                      placeholder="John"
+                      value={registerData.firstName}
+                      onChange={(e) => setRegisterData(prev => ({ ...prev, firstName: e.target.value }))}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-email">Email</Label>
+                    <Label htmlFor="register-lastName">Last Name</Label>
                     <Input
-                      id="register-email"
-                      type="email"
-                      value={registerData.email}
-                      onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="Enter your email"
+                      id="register-lastName"
+                      placeholder="Doe"
+                      value={registerData.lastName}
+                      onChange={(e) => setRegisterData(prev => ({ ...prev, lastName: e.target.value }))}
+                      required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password">Password</Label>
-                    <Input
-                      id="register-password"
-                      type="password"
-                      value={registerData.password}
-                      onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
-                      placeholder="Create a password"
-                    />
-                  </div>
-                  <Button 
-                    className="w-full" 
-                    onClick={() => registerMutation.mutate(registerData)}
-                    disabled={registerMutation.isPending || !registerData.username || !registerData.password}
-                  >
-                    {registerMutation.isPending ? "Creating account..." : "Create Account"}
-                  </Button>
-                </CardContent>
-              </Card>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-email">Email</Label>
+                  <Input
+                    id="register-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={registerData.email}
+                    onChange={(e) => setRegisterData(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">Password</Label>
+                  <Input
+                    id="register-password"
+                    type="password"
+                    placeholder="Create a password"
+                    value={registerData.password}
+                    onChange={(e) => setRegisterData(prev => ({ ...prev, password: e.target.value }))}
+                    required
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={registerMutation.isPending}
+                >
+                  {registerMutation.isPending ? "Creating account..." : "Create Account"}
+                </Button>
+              </form>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={handleGoogleSignIn}
+              >
+                Sign up with Google
+              </Button>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
