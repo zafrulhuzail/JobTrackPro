@@ -106,7 +106,7 @@ export function setupGoogleAuth(app: express.Express) {
     }
   );
 
-  app.get('/api/auth/logout', (req, res) => {
+  app.post('/api/auth/logout', (req, res) => {
     req.logout((err) => {
       if (err) {
         return res.status(500).json({ error: 'Failed to logout' });
@@ -116,11 +116,12 @@ export function setupGoogleAuth(app: express.Express) {
       req.session.destroy((destroyErr) => {
         if (destroyErr) {
           console.error('Session destroy error:', destroyErr);
+          return res.status(500).json({ error: 'Failed to destroy session' });
         }
         
         // Clear the session cookie
         res.clearCookie('connect.sid');
-        res.redirect('/');
+        res.json({ message: 'Logged out successfully' });
       });
     });
   });

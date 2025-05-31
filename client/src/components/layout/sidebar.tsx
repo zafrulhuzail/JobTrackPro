@@ -85,7 +85,23 @@ export function Sidebar() {
             variant="outline"
             size="sm"
             className="w-full justify-start"
-            onClick={() => window.location.href = '/api/logout'}
+            onClick={async () => {
+              try {
+                const response = await fetch('/api/auth/logout', {
+                  method: 'POST',
+                  credentials: 'include'
+                });
+                
+                if (response.ok) {
+                  window.location.href = '/';
+                } else {
+                  console.error('Logout failed');
+                }
+              } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/';
+              }
+            }}
           >
             <LogOut className="w-4 h-4 mr-2" />
             Sign Out
