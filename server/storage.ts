@@ -4,7 +4,7 @@ import {
   type Application,
   type InsertApplication,
   type UpdateApplication,
-  type UpsertUser,
+  type InsertUser,
   type User,
 } from "@shared/schema";
 import { db } from "./db";
@@ -12,18 +12,19 @@ import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
   
   // Applications CRUD
-  createApplication(userId: string, application: InsertApplication): Promise<Application>;
-  getApplications(userId: string): Promise<Application[]>;
-  getApplication(userId: string, id: number): Promise<Application | undefined>;
-  updateApplication(userId: string, id: number, updates: UpdateApplication): Promise<Application | undefined>;
-  deleteApplication(userId: string, id: number): Promise<boolean>;
+  createApplication(userId: number, application: InsertApplication): Promise<Application>;
+  getApplications(userId: number): Promise<Application[]>;
+  getApplication(userId: number, id: number): Promise<Application | undefined>;
+  updateApplication(userId: number, id: number, updates: UpdateApplication): Promise<Application | undefined>;
+  deleteApplication(userId: number, id: number): Promise<boolean>;
   
   // Statistics
-  getApplicationStats(userId: string): Promise<{
+  getApplicationStats(userId: number): Promise<{
     totalApplications: number;
     pendingApplications: number;
     interviewsScheduled: number;
