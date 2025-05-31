@@ -1,15 +1,23 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth, isAuthenticated, storage } from "./auth-simple";
+import { storage } from "./storage";
 import { insertApplicationSchema, updateApplicationSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  setupAuth(app);
+  // Temporary auth endpoint - returns a demo user
+  app.get('/api/auth/user', (req, res) => {
+    res.json({
+      id: 1,
+      email: 'demo@example.com',
+      firstName: 'Demo',
+      lastName: 'User',
+      profileImageUrl: null
+    });
+  });
 
   // Get application statistics
-  app.get("/api/applications/stats", isAuthenticated, async (req: any, res) => {
+  app.get("/api/applications/stats", async (req: any, res) => {
     try {
       const userId = req.user.id;
       const stats = await storage.getApplicationStats(userId);

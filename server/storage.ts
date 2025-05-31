@@ -14,7 +14,10 @@ export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserGoogleId(userId: number, googleId: string): Promise<void>;
   
   // Applications CRUD
   createApplication(userId: number, application: InsertApplication): Promise<Application>;
@@ -44,6 +47,20 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
+    return user;
+  }
+
+  async updateUserGoogleId(userId: number, googleId: string): Promise<void> {
+    await db.update(users).set({ googleId }).where(eq(users.id, userId));
+  }
+
   async createUser(userData: InsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
@@ -53,7 +70,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Applications CRUD
-  async getApplication(userId: string, id: number): Promise<Application | undefined> {
+  async getApplication(userId: number, id: number): Promise<Application | undefined> {
     const [application] = await db
       .select()
       .from(applications)
@@ -61,7 +78,7 @@ export class DatabaseStorage implements IStorage {
     return application || undefined;
   }
 
-  async createApplication(userId: string, insertApplication: InsertApplication): Promise<Application> {
+  async createApplication(userId: number, insertApplication: InsertApplication): Promise<Application> {
     const [application] = await db
       .insert(applications)
       .values({ ...insertApplication, userId })
@@ -69,7 +86,7 @@ export class DatabaseStorage implements IStorage {
     return application;
   }
 
-  async getApplications(userId: string): Promise<Application[]> {
+  async getApplications(userId: number): Promise<Application[]> {
     return await db
       .select()
       .from(applications)
