@@ -34,36 +34,47 @@ export function setupGoogleAuth(app: express.Express) {
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
+      console.log('Google OAuth profile:', profile);
+      
       // Check if user already exists with this Google ID
       let user = await storage.getUserByGoogleId(profile.id);
+      console.log('Existing user by Google ID:', user);
       
       if (user) {
+        console.log('User found, authenticating:', user);
         return done(null, user);
       }
 
       // Check if user exists with this email
       if (profile.emails && profile.emails.length > 0) {
         user = await storage.getUserByEmail(profile.emails[0].value);
+        console.log('Existing user by email:', user);
         if (user) {
           // Link Google account to existing user
           await storage.updateUserGoogleId(user.id, profile.id);
           user = await storage.getUser(user.id);
+          console.log('Linked Google account to existing user:', user);
           return done(null, user);
         }
       }
 
       // Create new user
+      console.log('Creating new user...');
       const newUser = await storage.createUser({
         email: profile.emails?.[0]?.value || null,
         firstName: profile.name?.givenName || null,
         lastName: profile.name?.familyName || null,
         profileImageUrl: profile.photos?.[0]?.value || null,
         googleId: profile.id,
+        username: null,
+        password: null,
       });
+      console.log('Created new user:', newUser);
 
       return done(null, newUser);
     } catch (error) {
-      return done(error, null);
+      console.error('Google OAuth error:', error);
+      return done(error, false);
     }
   }));
 
@@ -89,6 +100,8 @@ export function setupGoogleAuth(app: express.Express) {
   app.get('/api/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/?error=auth_failed' }),
     (req, res) => {
+      console.log('Google auth callback - user:', req.user);
+      console.log('Google auth callback - session:', req.session);
       res.redirect('/');
     }
   );
