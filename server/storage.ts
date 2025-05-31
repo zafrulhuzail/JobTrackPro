@@ -1,17 +1,29 @@
-import { applications, type Application, type InsertApplication, type UpdateApplication } from "@shared/schema";
+import {
+  applications,
+  users,
+  type Application,
+  type InsertApplication,
+  type UpdateApplication,
+  type UpsertUser,
+  type User,
+} from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
+  // User operations
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  
   // Applications CRUD
-  createApplication(application: InsertApplication): Promise<Application>;
-  getApplications(): Promise<Application[]>;
-  getApplication(id: number): Promise<Application | undefined>;
-  updateApplication(id: number, updates: UpdateApplication): Promise<Application | undefined>;
-  deleteApplication(id: number): Promise<boolean>;
+  createApplication(userId: string, application: InsertApplication): Promise<Application>;
+  getApplications(userId: string): Promise<Application[]>;
+  getApplication(userId: string, id: number): Promise<Application | undefined>;
+  updateApplication(userId: string, id: number, updates: UpdateApplication): Promise<Application | undefined>;
+  deleteApplication(userId: string, id: number): Promise<boolean>;
   
   // Statistics
-  getApplicationStats(): Promise<{
+  getApplicationStats(userId: string): Promise<{
     totalApplications: number;
     pendingApplications: number;
     interviewsScheduled: number;
@@ -20,44 +32,78 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getApplication(id: number): Promise<Application | undefined> {
-    const [application] = await db.select().from(applications).where(eq(applications.id, id));
+  // User operations
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  // Applications CRUD
+  async getApplication(userId: string, id: number): Promise<Application | undefined> {
+    const [application] = await db
+      .select()
+      .from(applications)
+      .where(and(eq(applications.id, id), eq(applications.userId, userId)));
     return application || undefined;
   }
 
-  async createApplication(insertApplication: InsertApplication): Promise<Application> {
+  async createApplication(userId: string, insertApplication: InsertApplication): Promise<Application> {
     const [application] = await db
       .insert(applications)
-      .values(insertApplication)
+      .values({ ...insertApplication, userId })
       .returning();
     return application;
   }
 
-  async getApplications(): Promise<Application[]> {
-    return await db.select().from(applications).orderBy(applications.lastUpdated);
+  async getApplications(userId: string): Promise<Application[]> {
+    return await db
+      .select()
+      .from(applications)
+      .where(eq(applications.userId, userId))
+      .orderBy(applications.lastUpdated);
   }
 
-  async updateApplication(id: number, updates: UpdateApplication): Promise<Application | undefined> {
+  async updateApplication(userId: string, id: number, updates: UpdateApplication): Promise<Application | undefined> {
     const [application] = await db
       .update(applications)
       .set({ ...updates, lastUpdated: new Date() })
-      .where(eq(applications.id, id))
+      .where(and(eq(applications.id, id), eq(applications.userId, userId)))
       .returning();
     return application || undefined;
   }
 
-  async deleteApplication(id: number): Promise<boolean> {
-    const result = await db.delete(applications).where(eq(applications.id, id));
+  async deleteApplication(userId: string, id: number): Promise<boolean> {
+    const result = await db
+      .delete(applications)
+      .where(and(eq(applications.id, id), eq(applications.userId, userId)));
     return (result.rowCount || 0) > 0;
   }
 
-  async getApplicationStats(): Promise<{
+  async getApplicationStats(userId: string): Promise<{
     totalApplications: number;
     pendingApplications: number;
     interviewsScheduled: number;
     responseRate: number;
   }> {
-    const allApplications = await db.select().from(applications);
+    const allApplications = await db
+      .select()
+      .from(applications)
+      .where(eq(applications.userId, userId));
     const total = allApplications.length;
     const pending = allApplications.filter(app => app.status === "applied").length;
     const interviews = allApplications.filter(app => app.status === "interview").length;
