@@ -86,7 +86,7 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
       app.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.position.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStatus = statusFilter === "" || app.status === statusFilter;
+    const matchesStatus = statusFilter === "" || statusFilter === "all" || app.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
@@ -126,7 +126,7 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="applied">Applied</SelectItem>
                 <SelectItem value="screening">Phone Screening</SelectItem>
                 <SelectItem value="interview">Interview</SelectItem>

@@ -5,6 +5,16 @@ import { insertApplicationSchema, updateApplicationSchema } from "@shared/schema
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Get application statistics
+  app.get("/api/applications/stats", async (req, res) => {
+    try {
+      const stats = await storage.getApplicationStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
   // Get all applications
   app.get("/api/applications", async (req, res) => {
     try {
@@ -94,16 +104,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete application" });
-    }
-  });
-
-  // Get application statistics
-  app.get("/api/applications/stats", async (req, res) => {
-    try {
-      const stats = await storage.getApplicationStats();
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch statistics" });
     }
   });
 
