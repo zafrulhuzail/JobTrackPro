@@ -70,7 +70,7 @@ export function Sidebar() {
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                 {user?.firstName && user?.lastName 
                   ? `${user.firstName} ${user.lastName}`
-                  : user?.username || 'User'
+                  : user?.email?.split('@')[0] || 'User'
                 }
               </p>
               {user?.email && (

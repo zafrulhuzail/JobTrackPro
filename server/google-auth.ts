@@ -75,9 +75,9 @@ export function setupGoogleAuth(app: express.Express) {
   passport.deserializeUser(async (id: number, done) => {
     try {
       const user = await storage.getUser(id);
-      done(null, user);
+      done(null, user || false);
     } catch (error) {
-      done(error, null);
+      done(error, false);
     }
   });
 

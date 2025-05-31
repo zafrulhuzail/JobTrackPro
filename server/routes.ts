@@ -2,24 +2,17 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertApplicationSchema, updateApplicationSchema } from "@shared/schema";
+import { setupGoogleAuth, requireAuth } from "./google-auth";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Temporary auth endpoint - returns a demo user
-  app.get('/api/auth/user', (req, res) => {
-    res.json({
-      id: 1,
-      email: 'demo@example.com',
-      firstName: 'Demo',
-      lastName: 'User',
-      profileImageUrl: null
-    });
-  });
+  // Set up Google OAuth authentication
+  setupGoogleAuth(app);
 
   // Get application statistics
-  app.get("/api/applications/stats", async (req: any, res) => {
+  app.get("/api/applications/stats", requireAuth, async (req: any, res) => {
     try {
-      const userId = 1; // Demo user ID
+      const userId = req.user.id;
       const stats = await storage.getApplicationStats(userId);
       res.json(stats);
     } catch (error) {
@@ -28,9 +21,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all applications
-  app.get("/api/applications", async (req: any, res) => {
+  app.get("/api/applications", requireAuth, async (req: any, res) => {
     try {
-      const userId = 1; // Demo user ID
+      const userId = req.user.id;
       const applications = await storage.getApplications(userId);
       res.json(applications);
     } catch (error) {
@@ -39,9 +32,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get single application
-  app.get("/api/applications/:id", async (req: any, res) => {
+  app.get("/api/applications/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = 1; // Demo user ID
+      const userId = req.user.id;
       const applicationId = parseInt(req.params.id);
       const application = await storage.getApplication(userId, applicationId);
       
@@ -56,9 +49,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create application
-  app.post("/api/applications", async (req: any, res) => {
+  app.post("/api/applications", requireAuth, async (req: any, res) => {
     try {
-      const userId = 1; // Demo user ID
+      const userId = req.user.id;
       const validatedData = insertApplicationSchema.parse(req.body);
       const application = await storage.createApplication(userId, validatedData);
       res.status(201).json(application);
@@ -75,9 +68,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update application
-  app.patch("/api/applications/:id", async (req: any, res) => {
+  app.patch("/api/applications/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = 1; // Demo user ID
+      const userId = req.user.id;
       const applicationId = parseInt(req.params.id);
       const validatedData = updateApplicationSchema.parse(req.body);
       
@@ -101,9 +94,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete application
-  app.delete("/api/applications/:id", async (req: any, res) => {
+  app.delete("/api/applications/:id", requireAuth, async (req: any, res) => {
     try {
-      const userId = 1; // Demo user ID
+      const userId = req.user.id;
       const applicationId = parseInt(req.params.id);
       
       const deleted = await storage.deleteApplication(userId, applicationId);

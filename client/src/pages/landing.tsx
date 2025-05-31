@@ -21,9 +21,9 @@ export default function Landing() {
           <Button 
             size="lg" 
             className="px-8 py-3 text-lg"
-            onClick={() => window.location.href = '/auth'}
+            onClick={() => window.location.href = '/api/auth/google'}
           >
-            Get Started
+            Sign in with Google
           </Button>
         </div>
 
@@ -125,9 +125,9 @@ export default function Landing() {
           <Button 
             size="lg" 
             className="px-8 py-3 text-lg"
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => window.location.href = '/api/auth/google'}
           >
-            Sign In to Get Started
+            Sign in with Google
           </Button>
         </div>
       </div>
