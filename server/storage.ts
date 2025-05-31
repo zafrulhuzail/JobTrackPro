@@ -1,4 +1,6 @@
 import { applications, type Application, type InsertApplication, type UpdateApplication } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Applications CRUD
@@ -17,58 +19,36 @@ export interface IStorage {
   }>;
 }
 
-export class MemStorage implements IStorage {
-  private applications: Map<number, Application>;
-  private currentId: number;
-
-  constructor() {
-    this.applications = new Map();
-    this.currentId = 1;
+export class DatabaseStorage implements IStorage {
+  async getApplication(id: number): Promise<Application | undefined> {
+    const [application] = await db.select().from(applications).where(eq(applications.id, id));
+    return application || undefined;
   }
 
   async createApplication(insertApplication: InsertApplication): Promise<Application> {
-    const id = this.currentId++;
-    const application: Application = {
-      id,
-      companyName: insertApplication.companyName,
-      position: insertApplication.position,
-      location: insertApplication.location || null,
-      status: insertApplication.status || "applied",
-      applicationDate: insertApplication.applicationDate,
-      lastUpdated: new Date(),
-      jobUrl: insertApplication.jobUrl || null,
-      notes: insertApplication.notes || null,
-      department: insertApplication.department || null,
-    };
-    this.applications.set(id, application);
+    const [application] = await db
+      .insert(applications)
+      .values(insertApplication)
+      .returning();
     return application;
   }
 
   async getApplications(): Promise<Application[]> {
-    return Array.from(this.applications.values()).sort((a, b) => 
-      new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
-    );
-  }
-
-  async getApplication(id: number): Promise<Application | undefined> {
-    return this.applications.get(id);
+    return await db.select().from(applications).orderBy(applications.lastUpdated);
   }
 
   async updateApplication(id: number, updates: UpdateApplication): Promise<Application | undefined> {
-    const existing = this.applications.get(id);
-    if (!existing) return undefined;
-
-    const updated: Application = {
-      ...existing,
-      ...updates,
-      lastUpdated: new Date(),
-    };
-    this.applications.set(id, updated);
-    return updated;
+    const [application] = await db
+      .update(applications)
+      .set({ ...updates, lastUpdated: new Date() })
+      .where(eq(applications.id, id))
+      .returning();
+    return application || undefined;
   }
 
   async deleteApplication(id: number): Promise<boolean> {
-    return this.applications.delete(id);
+    const result = await db.delete(applications).where(eq(applications.id, id));
+    return result.rowCount > 0;
   }
 
   async getApplicationStats(): Promise<{
@@ -77,7 +57,7 @@ export class MemStorage implements IStorage {
     interviewsScheduled: number;
     responseRate: number;
   }> {
-    const allApplications = Array.from(this.applications.values());
+    const allApplications = await db.select().from(applications);
     const total = allApplications.length;
     const pending = allApplications.filter(app => app.status === "applied").length;
     const interviews = allApplications.filter(app => app.status === "interview").length;
@@ -95,4 +75,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
