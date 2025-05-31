@@ -1,12 +1,15 @@
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 import { 
   BarChart3, 
   Briefcase, 
   Building, 
   Calendar, 
   Settings, 
-  User 
+  User,
+  LogOut
 } from "lucide-react";
 
 const navigation = [
@@ -19,6 +22,7 @@ const navigation = [
 
 export function Sidebar() {
   const [location] = useLocation();
+  const { user } = useAuth();
 
   return (
     <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg border-r border-gray-200 dark:border-gray-700">
@@ -56,17 +60,36 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* User Profile */}
-        <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+        {/* User Profile & Logout */}
+        <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
           <div className="flex items-center">
             <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
               <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">John Doe</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">john@example.com</p>
+            <div className="ml-3 flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                {user?.firstName && user?.lastName 
+                  ? `${user.firstName} ${user.lastName}`
+                  : user?.username || 'User'
+                }
+              </p>
+              {user?.email && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {user.email}
+                </p>
+              )}
             </div>
           </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start"
+            onClick={() => window.location.href = '/api/logout'}
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
       </div>
     </div>
