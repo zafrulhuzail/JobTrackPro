@@ -1,12 +1,16 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { User, Bell, Database, Download } from "lucide-react";
+import { User, Bell, Database, Download, Mail } from "lucide-react";
+import { EmailTestModal } from "@/components/applications/email-test-modal";
 
 export default function Settings() {
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -114,6 +118,40 @@ export default function Settings() {
           </CardContent>
         </Card>
 
+        {/* Email Integration */}
+        <Card className="bg-white dark:bg-gray-800">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Mail className="h-5 w-5 mr-2" />
+              Email Integration
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>SendGrid Integration</Label>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Test your SendGrid email configuration with various email types
+              </p>
+              <Button 
+                onClick={() => setEmailModalOpen(true)}
+                className="w-full"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Test Email Integration
+              </Button>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <Label>Email Features Available</Label>
+              <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <li>• Application follow-up reminders</li>
+                <li>• Interview scheduling notifications</li>
+                <li>• Weekly progress summaries</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Application Preferences */}
         <Card className="bg-white dark:bg-gray-800">
           <CardHeader>
@@ -141,6 +179,11 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
+
+      <EmailTestModal
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+      />
     </div>
   );
 }
