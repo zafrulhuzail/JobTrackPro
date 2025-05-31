@@ -1,28 +1,18 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./auth";
+import { setupSimpleAuth, isAuthenticated, simpleStorage } from "./simple-auth";
 import { insertApplicationSchema, updateApplicationSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  setupAuth(app);
-
-  // Simple login check endpoint
-  app.get('/api/auth/user', (req: any, res) => {
-    if (req.isAuthenticated()) {
-      res.json(req.user);
-    } else {
-      res.status(401).json({ message: "Unauthorized" });
-    }
-  });
+  setupSimpleAuth(app);
 
   // Get application statistics
   app.get("/api/applications/stats", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const stats = await storage.getApplicationStats(userId);
+      const userId = req.user.id;
+      const stats = await simpleStorage.getApplicationStats(userId);
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch statistics" });
@@ -32,8 +22,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all applications
   app.get("/api/applications", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const applications = await storage.getApplications(userId);
+      const userId = req.user.id;
+      const applications = await simpleStorage.getApplications(userId);
       res.json(applications);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch applications" });
@@ -43,13 +33,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get application by ID
   app.get("/api/applications/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid application ID" });
       }
 
-      const application = await storage.getApplication(userId, id);
+      const application = await simpleStorage.getApplication(userId, id);
       if (!application) {
         return res.status(404).json({ message: "Application not found" });
       }
@@ -63,9 +53,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new application
   app.post("/api/applications", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const validatedData = insertApplicationSchema.parse(req.body);
-      const application = await storage.createApplication(userId, validatedData);
+      const application = await simpleStorage.createApplication(userId, validatedData);
       res.status(201).json(application);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -81,14 +71,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update application
   app.patch("/api/applications/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid application ID" });
       }
 
       const validatedData = updateApplicationSchema.parse(req.body);
-      const application = await storage.updateApplication(userId, id, validatedData);
+      const application = await simpleStorage.updateApplication(userId, id, validatedData);
       
       if (!application) {
         return res.status(404).json({ message: "Application not found" });
@@ -109,13 +99,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete application
   app.delete("/api/applications/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid application ID" });
       }
 
-      const deleted = await storage.deleteApplication(userId, id);
+      const deleted = await simpleStorage.deleteApplication(userId, id);
       if (!deleted) {
         return res.status(404).json({ message: "Application not found" });
       }
