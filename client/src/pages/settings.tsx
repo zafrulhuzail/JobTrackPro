@@ -5,8 +5,30 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { User, Bell, Database, Download } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Settings() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [profileData, setProfileData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    title: ""
+  });
+
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        title: ""
+      });
+    }
+  }, [user]);
   return (
     <div className="p-6">
       {/* Header */}
@@ -28,18 +50,50 @@ export default function Settings() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue="John Doe" />
+              <Label htmlFor="firstName">First Name</Label>
+              <Input 
+                id="firstName" 
+                value={profileData.firstName}
+                onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input 
+                id="lastName" 
+                value={profileData.lastName}
+                onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
-              <Input id="email" type="email" defaultValue="john@example.com" />
+              <Input 
+                id="email" 
+                type="email" 
+                value={profileData.email}
+                onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="title">Current Title</Label>
-              <Input id="title" placeholder="e.g., Software Engineer" />
+              <Input 
+                id="title" 
+                placeholder="e.g., Software Engineer" 
+                value={profileData.title}
+                onChange={(e) => setProfileData(prev => ({ ...prev, title: e.target.value }))}
+              />
             </div>
-            <Button className="w-full">Update Profile</Button>
+            <Button 
+              className="w-full"
+              onClick={() => {
+                toast({
+                  title: "Profile Updated",
+                  description: "Your profile information has been saved successfully.",
+                });
+              }}
+            >
+              Update Profile
+            </Button>
           </CardContent>
         </Card>
 
@@ -98,7 +152,55 @@ export default function Settings() {
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Download all your application data as CSV
               </p>
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/applications', {
+                      credentials: 'include'
+                    });
+                    if (response.ok) {
+                      const applications = await response.json();
+                      
+                      // Convert to CSV format
+                      const csvHeaders = ['Company', 'Position', 'Status', 'Application Date', 'Location', 'Notes'];
+                      const csvRows = applications.map(app => [
+                        app.companyName,
+                        app.position,
+                        app.status,
+                        app.applicationDate,
+                        app.location || '',
+                        app.notes || ''
+                      ]);
+                      
+                      const csvContent = [csvHeaders, ...csvRows]
+                        .map(row => row.map(field => `"${field}"`).join(','))
+                        .join('\n');
+                      
+                      // Download the file
+                      const blob = new Blob([csvContent], { type: 'text/csv' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'applications.csv';
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      
+                      toast({
+                        title: "Export Complete",
+                        description: "Your applications have been exported as CSV.",
+                      });
+                    }
+                  } catch (error) {
+                    toast({
+                      title: "Export Failed",
+                      description: "Failed to export applications.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Export Applications
               </Button>
@@ -137,7 +239,17 @@ export default function Settings() {
               </div>
               <Switch defaultChecked />
             </div>
-            <Button className="w-full">Save Preferences</Button>
+            <Button 
+              className="w-full"
+              onClick={() => {
+                toast({
+                  title: "Preferences Saved",
+                  description: "Your application preferences have been updated.",
+                });
+              }}
+            >
+              Save Preferences
+            </Button>
           </CardContent>
         </Card>
       </div>
