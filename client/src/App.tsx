@@ -11,6 +11,7 @@ import Companies from "@/pages/companies";
 import Interviews from "@/pages/interviews";
 import Settings from "@/pages/settings";
 import Landing from "@/pages/landing";
+import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -31,6 +32,7 @@ function Router() {
     return (
       <Switch>
         <Route path="/" component={Landing} />
+        <Route path="/auth" component={AuthPage} />
         <Route component={Landing} />
       </Switch>
     );
