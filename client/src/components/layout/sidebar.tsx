@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Link, useLocation } from "wouter";
 import { 
   BarChart3, 
   Briefcase, 
@@ -9,14 +10,16 @@ import {
 } from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: BarChart3, current: true },
-  { name: "Applications", href: "/applications", icon: Briefcase, current: false },
-  { name: "Companies", href: "/companies", icon: Building, current: false },
-  { name: "Interviews", href: "/interviews", icon: Calendar, current: false },
-  { name: "Settings", href: "/settings", icon: Settings, current: false },
+  { name: "Dashboard", href: "/", icon: BarChart3 },
+  { name: "Applications", href: "/applications", icon: Briefcase },
+  { name: "Companies", href: "/companies", icon: Building },
+  { name: "Interviews", href: "/interviews", icon: Calendar },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function Sidebar() {
+  const [location] = useLocation();
+
   return (
     <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg border-r border-gray-200 dark:border-gray-700">
       <div className="flex flex-col h-full">
@@ -34,20 +37,21 @@ export function Sidebar() {
         <nav className="flex-1 px-4 py-4 space-y-2">
           {navigation.map((item) => {
             const Icon = item.icon;
+            const isActive = location === item.href;
             return (
-              <a
+              <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
                   "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors",
-                  item.current
+                  isActive
                     ? "bg-blue-600 text-white"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 )}
               >
                 <Icon className="w-5 h-5 mr-3" />
                 {item.name}
-              </a>
+              </Link>
             );
           })}
         </nav>
