@@ -27,10 +27,12 @@ import {
   Eye, 
   Trash2,
   List,
-  LayoutGrid 
+  LayoutGrid,
+  Mail
 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { EmailTestModal } from "./email-test-modal";
 
 interface ApplicationTableProps {
   searchQuery: string;
@@ -55,6 +57,8 @@ const STATUS_LABELS = {
 export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<Application | undefined>();
   const { toast } = useToast();
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
@@ -95,6 +99,11 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
     if (window.confirm("Are you sure you want to delete this application?")) {
       deleteApplicationMutation.mutate(id);
     }
+  };
+
+  const handleSendEmail = (application: Application) => {
+    setSelectedApplication(application);
+    setEmailModalOpen(true);
   };
 
   if (isLoading) {
