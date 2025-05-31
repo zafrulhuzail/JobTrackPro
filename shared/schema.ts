@@ -16,11 +16,13 @@ export const sessions = pgTable(
 // User storage table for authentication
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: varchar("username").unique().notNull(),
+  username: varchar("username").unique(),
   email: varchar("email").unique(),
-  password: varchar("password").notNull(),
+  password: varchar("password"),
+  googleId: varchar("google_id").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
