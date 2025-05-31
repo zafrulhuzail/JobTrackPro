@@ -139,7 +139,7 @@ export function setupGoogleAuth(app: express.Express) {
       }
 
       // Hash password
-      const bcrypt = require('bcrypt');
+      const bcrypt = await import('bcrypt');
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Create user
@@ -182,7 +182,7 @@ export function setupGoogleAuth(app: express.Express) {
       }
 
       // Verify password
-      const bcrypt = require('bcrypt');
+      const bcrypt = await import('bcrypt');
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
         return res.status(401).json({ message: 'Invalid email or password' });
