@@ -20,7 +20,7 @@
     "https://jobs.apple.com/*",
     "https://careers.microsoft.com/*",
     "https://jobs.netflix.com/*",
-    "http://localhost:5000/*",
+    "http://localhost:8000/*",
     "https://*.replit.dev/*"
   ],
   "action": {

@@ -42,8 +42,7 @@ This Chrome extension automatically extracts job posting details from popular jo
 On first use, you'll need to configure your JobTracker server URL:
 - Open the extension popup
 - In the "JobTracker Server URL" field, enter your app's URL
-- For Replit deployments, this will be something like: `https://your-app-name.replit.app`
-- For local development: `http://localhost:5000`
+- For local development: `http://localhost:8000`
 
 ## Supported Job Boards
 
