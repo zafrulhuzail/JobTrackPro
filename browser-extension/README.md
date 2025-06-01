@@ -42,7 +42,7 @@ This Chrome extension automatically extracts job posting details from popular jo
 On first use, you'll need to configure your JobTracker server URL:
 - Open the extension popup
 - In the "JobTracker Server URL" field, enter your app's URL
-- For local development: `http://localhost:8000`
+- For local development: `https://jobtrackpro-production.up.railway.app`
 
 ## Supported Job Boards
 

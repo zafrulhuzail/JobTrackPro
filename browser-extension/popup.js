@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Default to current domain
     serverUrlInput.value = window.location.origin.includes('replit.dev') 
       ? window.location.origin 
-      : 'https://your-app.replit.dev';
+      : 'https://jobtrackpro-production.up.railway.app';
   }
 
   // Save server URL when changed

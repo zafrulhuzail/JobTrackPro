@@ -20,7 +20,7 @@
     "https://jobs.apple.com/*",
     "https://careers.microsoft.com/*",
     "https://jobs.netflix.com/*",
-    "http://localhost:8000/*",
+    "https://jobtrackpro-production.up.railway.app/*",
     "https://*.replit.dev/*"
   ],
   "action": {
