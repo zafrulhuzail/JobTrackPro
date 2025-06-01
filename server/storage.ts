@@ -18,6 +18,9 @@ export interface IStorage {
   getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserGoogleId(userId: number, googleId: string): Promise<void>;
+  updateUserPassword(userId: number, password: string): Promise<void>;
+  setPasswordResetToken(email: string, token: string, expires: Date): Promise<void>;
+  getUserByResetToken(token: string): Promise<User | undefined>;
   
   // Applications CRUD
   createApplication(userId: number, application: InsertApplication): Promise<Application>;
@@ -134,6 +137,31 @@ export class DatabaseStorage implements IStorage {
       interviewsScheduled: interviews,
       responseRate,
     };
+  }
+
+  async updateUserPassword(userId: number, password: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ password })
+      .where(eq(users.id, userId));
+  }
+
+  async setPasswordResetToken(email: string, token: string, expires: Date): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        resetToken: token,
+        resetTokenExpires: expires
+      })
+      .where(eq(users.email, email));
+  }
+
+  async getUserByResetToken(token: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.resetToken, token));
+    return user || undefined;
   }
 }
 

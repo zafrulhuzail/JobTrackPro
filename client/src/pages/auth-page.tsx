@@ -10,6 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { Link } from "wouter";
 
 interface LoginData {
   email: string;
@@ -185,6 +186,11 @@ export default function AuthPage() {
                 </Button>
               </form>
               
+              <div className="text-center mt-4">
+                <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-500">
+                  Forgot your password?
+                </Link>
+              </div>
 
             </TabsContent>
             

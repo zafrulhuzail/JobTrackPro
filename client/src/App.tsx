@@ -12,6 +12,8 @@ import Interviews from "@/pages/interviews";
 import Settings from "@/pages/settings";
 import Landing from "@/pages/landing";
 import AuthPage from "@/pages/auth-page";
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -33,6 +35,8 @@ function Router() {
       <Switch>
         <Route path="/" component={Landing} />
         <Route path="/auth" component={AuthPage} />
+        <Route path="/forgot-password" component={ForgotPassword} />
+        <Route path="/reset-password" component={ResetPassword} />
         <Route component={Landing} />
       </Switch>
     );

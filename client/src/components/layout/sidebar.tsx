@@ -87,7 +87,7 @@ export function Sidebar() {
             className="w-full justify-start"
             onClick={async () => {
               try {
-                const response = await fetch('/api/auth/logout', {
+                const response = await fetch('/api/logout', {
                   method: 'POST',
                   credentials: 'include'
                 });
