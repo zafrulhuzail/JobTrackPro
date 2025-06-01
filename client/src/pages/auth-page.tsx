@@ -46,7 +46,7 @@ export default function AuthPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginData) => {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -86,7 +86,7 @@ export default function AuthPage() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -126,9 +126,7 @@ export default function AuthPage() {
     registerMutation.mutate(registerData);
   };
 
-  const handleGoogleSignIn = () => {
-    window.location.href = '/api/auth/google';
-  };
+
 
   if (isLoading) {
     return (
@@ -187,22 +185,7 @@ export default function AuthPage() {
                 </Button>
               </form>
               
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-              
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={handleGoogleSignIn}
-              >
-                Sign in with Google
-              </Button>
+
             </TabsContent>
             
             <TabsContent value="register" className="space-y-4">
@@ -270,22 +253,7 @@ export default function AuthPage() {
                 </Button>
               </form>
               
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-              
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={handleGoogleSignIn}
-              >
-                Sign up with Google
-              </Button>
+
             </TabsContent>
           </Tabs>
         </CardContent>
