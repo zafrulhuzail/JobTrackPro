@@ -2,15 +2,20 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertApplicationSchema, updateApplicationSchema } from "@shared/schema";
-import { setupGoogleAuth, requireAuth } from "./google-auth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Set up Google OAuth authentication
-  setupGoogleAuth(app);
+  // Health check endpoint for Docker
+  app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+  });
+
+  // Set up email/password authentication
+  setupAuth(app);
 
   // Get application statistics
-  app.get("/api/applications/stats", requireAuth, async (req: any, res) => {
+  app.get("/api/applications/stats", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const stats = await storage.getApplicationStats(userId);
@@ -21,7 +26,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all applications
-  app.get("/api/applications", requireAuth, async (req: any, res) => {
+  app.get("/api/applications", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const applications = await storage.getApplications(userId);
@@ -32,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get single application
-  app.get("/api/applications/:id", requireAuth, async (req: any, res) => {
+  app.get("/api/applications/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const applicationId = parseInt(req.params.id);
@@ -49,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create application
-  app.post("/api/applications", requireAuth, async (req: any, res) => {
+  app.post("/api/applications", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const validatedData = insertApplicationSchema.parse(req.body);
@@ -68,7 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update application
-  app.patch("/api/applications/:id", requireAuth, async (req: any, res) => {
+  app.patch("/api/applications/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const applicationId = parseInt(req.params.id);
@@ -94,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete application
-  app.delete("/api/applications/:id", requireAuth, async (req: any, res) => {
+  app.delete("/api/applications/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const applicationId = parseInt(req.params.id);
