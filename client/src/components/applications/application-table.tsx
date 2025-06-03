@@ -14,6 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Table,
   TableBody,
   TableCell,
@@ -91,10 +97,40 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
     return matchesSearch && matchesStatus;
   });
 
+  // Update application status mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, newStatus }: { id: number; newStatus: string }) => {
+      const response = await fetch(`/api/applications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Status Updated",
+        description: "Application status has been updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update application status",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleDelete = (id: number) => {
     if (window.confirm("Are you sure you want to delete this application?")) {
       deleteApplicationMutation.mutate(id);
     }
+  };
+
+  const handleStatusUpdate = (id: number, newStatus: string) => {
+    updateStatusMutation.mutate({ id, newStatus });
   };
 
   if (isLoading) {
@@ -218,9 +254,32 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge className={STATUS_COLORS[application.status as keyof typeof STATUS_COLORS]}>
-                        {STATUS_LABELS[application.status as keyof typeof STATUS_LABELS]}
-                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="p-0 h-auto">
+                            <Badge className={STATUS_COLORS[application.status as keyof typeof STATUS_COLORS]}>
+                              {STATUS_LABELS[application.status as keyof typeof STATUS_LABELS]}
+                            </Badge>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handleStatusUpdate(application.id, "applied")}>
+                            Applied
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStatusUpdate(application.id, "screening")}>
+                            Phone Screening
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStatusUpdate(application.id, "interview")}>
+                            Interview
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStatusUpdate(application.id, "offer")}>
+                            Offer
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStatusUpdate(application.id, "rejected")}>
+                            Rejected
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                     <TableCell className="text-sm text-gray-500 dark:text-gray-400">
                       {format(new Date(application.applicationDate), "MMM dd, yyyy")}
@@ -274,9 +333,32 @@ export function ApplicationTable({ searchQuery }: ApplicationTableProps) {
                           )}
                         </div>
                       </div>
-                      <Badge className={STATUS_COLORS[application.status as keyof typeof STATUS_COLORS]}>
-                        {STATUS_LABELS[application.status as keyof typeof STATUS_LABELS]}
-                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="p-0 h-auto">
+                            <Badge className={STATUS_COLORS[application.status as keyof typeof STATUS_COLORS]}>
+                              {STATUS_LABELS[application.status as keyof typeof STATUS_LABELS]}
+                            </Badge>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handleStatusUpdate(application.id, "applied")}>
+                            Applied
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStatusUpdate(application.id, "screening")}>
+                            Phone Screening
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStatusUpdate(application.id, "interview")}>
+                            Interview
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStatusUpdate(application.id, "offer")}>
+                            Offer
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStatusUpdate(application.id, "rejected")}>
+                            Rejected
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                     
                     <div className="space-y-3">
